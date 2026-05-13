@@ -2,7 +2,6 @@ from flask import Flask, jsonify
 import threading
 
 import miner
-
 app = Flask(__name__)
 
 # -------------------
@@ -43,3 +42,4 @@ def stop_mining():
     return jsonify({
         "message": "Mining stopped"
     })
+

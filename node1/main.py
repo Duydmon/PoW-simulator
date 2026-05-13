@@ -1,6 +1,13 @@
 from engine import app
 import threading
 import requests
+import hashlib
+
+IP_ADDRESS = "127.0.0.1"
+PORT:str = "5000"
+NODE_ID = hashlib.sha256((IP_ADDRESS+PORT).encode()).hexdigest()
+URL = f'http://{IP_ADDRESS}:{PORT}'
+
 
 # -------------------
 # Flask Server Thread
@@ -8,8 +15,8 @@ import requests
 def run_server():
 
     app.run(
-        host="127.0.0.1",
-        port=5000,
+        host=URL,
+        port=int(PORT),
         debug=False
     )
 
@@ -17,7 +24,7 @@ def run_server():
 # Menu
 # -------------------
 def menu():
-
+    requests.get(URL)
     while True:
 
         print("\n1. Start Mining")
@@ -32,7 +39,7 @@ def menu():
         if choice == "1":
 
             response = requests.get(
-                "http://127.0.0.1:5000/start"
+                f"{URL}/start"
             )
 
             print(response.json())
@@ -43,7 +50,7 @@ def menu():
         elif choice == "2":
 
             response = requests.get(
-                "http://127.0.0.1:5000/stop"
+                f"{URL}/stop"
             )
 
             print(response.json())
@@ -58,13 +65,10 @@ def menu():
 # Main
 # -------------------
 if __name__ == "__main__":
-
     # chạy flask ở thread riêng
     flask_thread = threading.Thread(
         target=run_server
     )
-
     flask_thread.start()
-
     # chạy menu
     menu()
