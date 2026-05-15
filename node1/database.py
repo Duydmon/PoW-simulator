@@ -110,3 +110,15 @@ def get_tip_block_data() -> dict:
         "chain_work": data[2],
     }
     return data_for_hash
+
+def mark_data_in_chain(message_id_list):
+    conn = sqlite3.connect('./db/blockchain.db')
+    cursor = conn.cursor()
+    cursor.executemany("""
+                   UPDATE mempool
+                   SET in_chain = 1
+                   WHERE id = ?
+                   """, [(tx_id,) for tx_id in message_id_list])
+    conn.commit()
+    conn.close()
+

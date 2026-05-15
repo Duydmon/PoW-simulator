@@ -46,6 +46,7 @@ def mine():
             print("mine success")
             print(hashed_block)
             print(this_block_data_for_hash)
+            database.mark_data_in_chain(message_id)
         else:
             nonce += 1
             print("mining...")
