@@ -10,22 +10,24 @@ mining = False
 def prepare_data_to_hash() -> str:
     mempool = database.get_data_from_mempool()
     transactions =[]
+    tx_id = []
     for row in mempool:
         tx ={
             "time": row[0],
             "data": row[1],
             "node_id": row[2]
         }
+        tx_id.append(row[3])
         transactions.append(tx)
 
     transactions_json = json.dumps(transactions, sort_keys=True)
-    return transactions_json
+    return transactions_json, tx_id
 
 def mine():
     global mining
     nonce = 0
     while mining:
-        data = prepare_data_to_hash()
+        data, message_id = prepare_data_to_hash()
         previous_block_data = database.get_tip_block_data() #block_hash, height, chain_work
         this_block_data ={
             "previous_hash": previous_block_data["block_hash"],

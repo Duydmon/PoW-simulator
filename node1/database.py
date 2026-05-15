@@ -31,7 +31,7 @@ def get_data_from_mempool() -> list:
     conn = sqlite3.connect('./db/blockchain.db')
     cursor = conn.cursor()
     cursor.execute("""
-     SELECT time, data, node_id 
+     SELECT time, data, node_id, id
      FROM mempool WHERE in_chain = 0 LIMIT 5""")
     row = cursor.fetchall()
     conn.close()
