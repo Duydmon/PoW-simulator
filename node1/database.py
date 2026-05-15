@@ -1,8 +1,6 @@
 #chứa các hàm và code truy xuât, nhập liệu dữ liệu vào cơ sở dữ liệu
 import sqlite3
-import sys
 import time
-import json
 
 # khi đưa data vào, sẽ ký số và
 
@@ -122,3 +120,43 @@ def mark_data_in_chain(message_id_list):
     conn.commit()
     conn.close()
 
+def add_new_block(block_data_dict, block_hash):
+    # this_block_data = {
+    #     "previous_hash": previous_block_data["block_hash"],
+    #     "height": previous_block_data["height"] + 1,
+    #     "timestamp": time.time(),
+    #     "difficulty": DIFFICULTY,
+    #     "miner": NODE_ID,
+    #     "data": data,
+    #     "chain_work": previous_block_data["chain_work"] + DIFFICULTY,
+    #     "nonce": nonce
+    # }
+    conn = sqlite3.connect('./db/blockchain.db')
+    cursor = conn.cursor()
+    cursor.execute("""
+    INSERT INTO blockchain(
+        block_hash,
+        previous_hash,
+        height,
+        timestamp,
+        difficulty,
+        miner,
+        data,
+        chain_work,
+        nonce,
+        is_main_chain
+        ) 
+    VALUES ( ?, ?, ?, ?, ? ,? ,? ,? ,?, 1)
+        """, (
+        block_hash,
+        block_data_dict["previous_hash"],
+        block_data_dict["height"],
+        block_data_dict["timestamp"],
+        block_data_dict["difficulty"],
+        block_data_dict["miner"],
+        block_data_dict["data"],
+        block_data_dict["chain_work"],
+        block_data_dict["nonce"]
+    ))
+    conn.commit()
+    conn.close()

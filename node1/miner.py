@@ -1,14 +1,18 @@
 import hashlib
 import json
-import threading
+from typing import Any
+
 import database
 import time
 
 from config import NODE_ID, DIFFICULTY
 mining = False
 
-def prepare_data_to_hash() -> str:
+def prepare_data_to_hash() -> tuple[str, list[Any]] | tuple[None, None]:
+    global mining
     mempool = database.get_data_from_mempool()
+    if not mempool:
+        return None, None
     transactions =[]
     tx_id = []
     for row in mempool:
@@ -26,8 +30,11 @@ def prepare_data_to_hash() -> str:
 def mine():
     global mining
     nonce = 0
+    data, message_id = prepare_data_to_hash()
+    if not data or not message_id:
+        print("No more data in mempool")
+        mining = False
     while mining:
-        data, message_id = prepare_data_to_hash()
         previous_block_data = database.get_tip_block_data() #block_hash, height, chain_work
         this_block_data ={
             "previous_hash": previous_block_data["block_hash"],
@@ -46,6 +53,7 @@ def mine():
             print("mine success")
             print(hashed_block)
             print(this_block_data_for_hash)
+            database.add_new_block(this_block_data, hashed_block)
             database.mark_data_in_chain(message_id)
         else:
             nonce += 1
@@ -53,3 +61,4 @@ def mine():
             print(f"Failed hassh:{hashed_block}")
 
 #cần trả lại kiểm soát về menu
+#khi xong thì vẫn dừng mine. cần thêm cái để mine đến khi mempool rỗng, khi nào mempool có thì tiếp tục mine.
