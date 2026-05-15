@@ -27,11 +27,15 @@ def add_data_mempool(data,node_id):
     conn.close()
     print("Data added to mempool!")
 
-# def get_data_from_mempool():
-#     conn = sqlite3.connect('./db/blockchain.db')
-#     cursor = conn.cursor()
-#     cursor.execute("""
-#     SELECT
+def get_data_from_mempool() -> list:
+    conn = sqlite3.connect('./db/blockchain.db')
+    cursor = conn.cursor()
+    cursor.execute("""
+     SELECT time, data, node_id 
+     FROM mempool WHERE in_chain = 0 LIMIT 5""")
+    row = cursor.fetchall()
+    conn.close()
+    return row
 
 
 def query_newest_block():
@@ -54,18 +58,12 @@ def query_newest_block():
             nonce
 
         FROM blockchain
-
+        WHERE is_main_chain = 1
         ORDER BY chain_work DESC
-
         LIMIT 1
-
     """)
-
     row = cursor.fetchone()
-
     conn.close()
-
-
     block = {
 
         "block_hash": row[0],
@@ -88,3 +86,27 @@ def query_newest_block():
     }
 
     return block
+
+def get_tip_block_data() -> dict:
+    conn = sqlite3.connect('./db/blockchain.db')
+    cursor = conn.cursor()
+    cursor.execute("""
+
+        SELECT
+            block_hash,
+            height,
+            chain_work
+
+        FROM blockchain
+        WHERE is_main_chain = 1
+        ORDER BY chain_work DESC
+        LIMIT 1
+    """)
+    data = cursor.fetchone()
+    conn.close()
+    data_for_hash = {
+        "block_hash": data[0],
+        "height": data[1],
+        "chain_work": data[2],
+    }
+    return data_for_hash

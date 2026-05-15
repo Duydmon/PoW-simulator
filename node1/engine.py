@@ -40,11 +40,10 @@ def start_mining():
 @app.route("/newest_block")
 def newest_block():
     new_block = database.query_newest_block()
-    block_json = json.dumps(
+    block_json_str = json.dumps(
         new_block,
-        sort_keys=True
     )
-    return block_json
+    return block_json_str
 
 @app.route("/add_mempool", methods=["POST"])
 def add_to_mempool():

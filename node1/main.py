@@ -5,10 +5,12 @@ import requests
 import hashlib
 import time
 
-IP_ADDRESS = "127.0.0.1"
-PORT:str = "5000"
-NODE_ID = hashlib.sha256((IP_ADDRESS+PORT).encode()).hexdigest()
-URL = f'http://{IP_ADDRESS}:{PORT}'
+from config import IP_ADDRESS, PORT, NODE_ID, URL
+
+# IP_ADDRESS = "127.0.0.1"
+# PORT:str = "5000"
+# NODE_ID = hashlib.sha256((IP_ADDRESS+PORT).encode()).hexdigest()
+# URL = f'http://{IP_ADDRESS}:{PORT}'
 
 
 # -------------------
@@ -71,6 +73,9 @@ def menu():
                 }
             )
             print(response.json())
+
+        # elif choice == "4":
+        #     response = requests.get()
 
         elif choice == "5":
             response = requests.get(
