@@ -43,7 +43,8 @@ def add_to_mempool():
     body = request.get_json()
     data = body['data']
     node_id = body['node_id']
-    database.add_data_mempool(data,node_id)
+    time = body['time']
+    database.add_data_mempool(data,node_id,time)
     return jsonify({
         "message": "Data added to mempool",
         "data": f'{data} from node {node_id}'

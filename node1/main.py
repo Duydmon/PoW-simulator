@@ -56,7 +56,8 @@ def menu():
                 f"{URL}/add_mempool",
                 json={
                     "data": data,
-                    "node_id": NODE_ID
+                    "node_id": NODE_ID,
+                    "time": time.time()
                 }
             )
             print(response.json())

@@ -4,7 +4,7 @@ import time
 
 # khi đưa data vào, sẽ ký số và
 
-def add_data_mempool(data,node_id):
+def add_data_mempool(data,node_id,timestamp):
     conn = sqlite3.connect('./db/blockchain.db')
     cursor = conn.cursor()
     cursor.execute("""
@@ -16,7 +16,7 @@ def add_data_mempool(data,node_id):
         )
         VALUES (?, ?, ?, ?)
     """, (
-        int(time.time()),
+        timestamp,
         data,
         node_id,
         0
