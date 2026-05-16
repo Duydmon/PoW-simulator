@@ -3,7 +3,7 @@ from engine import app
 import threading
 import requests
 import time
-
+import network
 from config import IP_ADDRESS, PORT, NODE_ID, URL, NODE_LIST
 
 # -------------------
@@ -74,36 +74,6 @@ def menu():
         elif choice == "0":
             break
 
-def announce():
-    for i in range(5000, 5011):
-        if i == int(PORT):
-            continue
-        try:
-            response = requests.post(
-                f"http://{IP_ADDRESS}:{i}/receive_node_id",
-                json={
-                    "node_id": NODE_ID,
-                    "port": PORT
-                },
-                timeout=0.1
-            )
-            if response.status_code != 200:
-                continue
-            response_node_data = response.json()
-            if response_node_data["node_id"] in NODE_LIST:
-                continue
-            NODE_LIST[
-                response_node_data["node_id"]
-            ] = {
-                "port": response_node_data["port"]
-            }
-            print(f"Connected node {i}")
-        except requests.exceptions.ConnectionError:
-            continue
-        except requests.exceptions.Timeout:
-            continue
-        except Exception as e:
-            print(f"Node {i}: {e}")
 
 # -------------------
 # Main
@@ -116,6 +86,6 @@ if __name__ == "__main__":
     flask_thread.start()
     time.sleep(1)
     # chạy menu
-    announce()
+    network.announce()
     print(NODE_LIST)
     menu()
