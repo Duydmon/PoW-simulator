@@ -1,21 +1,31 @@
 #chứa các hàm và code truy xuât, nhập liệu dữ liệu vào cơ sở dữ liệu
+import hashlib
+import json
 import sqlite3
 import time
 
 # khi đưa data vào, sẽ ký số và
 
 def add_data_mempool(data,node_id,timestamp):
+    data_to_hash = {
+        "data": data,
+        "node_id": node_id,
+        "timestamp": timestamp
+    }
+    hased_data = hashlib.sha256(json.dumps(data_to_hash,sort_keys=True).encode()).hexdigest()
     conn = sqlite3.connect('./db/blockchain.db')
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO mempool(
+            hash,
             time,
             data,
             node_id,
             in_chain
         )
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?, ?,?)
     """, (
+        hased_data,
         timestamp,
         data,
         node_id,
