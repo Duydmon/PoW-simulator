@@ -15,11 +15,12 @@ def prepare_data_to_hash() -> tuple[str, list[Any]] | tuple[None, None]:
     tx_id = []
     for row in mempool:
         tx ={
-            "time": row[0],
-            "data": row[1],
-            "node_id": row[2]
+            "hash": row[0],
+            "time": row[1],
+            "data": row[2],
+            "node_id": row[3]
         }
-        tx_id.append(row[3])
+        tx_id.append(row[4])
         transactions.append(tx)
     transactions_json = json.dumps(transactions, sort_keys=True)
     return transactions_json, tx_id
