@@ -2,9 +2,9 @@
 import json
 from flask import Flask, jsonify, request
 import threading
-
 import miner
 import database
+from config import NODE_ID, PORT, NODE_LIST
 app = Flask(__name__)
 
 # -------------------
@@ -13,8 +13,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-
-    return "Blockchain Node Running"
+    return jsonify({"message":"Blockchain Node Running"})
 
 @app.route("/start")
 def start_mining():
@@ -63,5 +62,17 @@ def stop_mining():
 
     return jsonify({
         "message": "Mining stopped"
+    })
+
+@app.route("/receive_node_id", methods=["POST"])
+def receive_node_id():
+    body = request.get_json()
+    if body["node_id"] not in NODE_LIST:
+        NODE_LIST[body['node_id']] = {
+            "port": body['port']
+        }
+    return jsonify({
+        "node_id": NODE_ID,
+        "port": int(PORT)
     })
 
