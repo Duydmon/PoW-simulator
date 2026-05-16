@@ -67,6 +67,6 @@ def receive_node_id():
         }
     return jsonify({
         "node_id": NODE_ID,
-        "port": int(PORT)
+        "port": PORT
     })
 

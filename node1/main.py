@@ -82,7 +82,7 @@ def announce():
                 f"http://{IP_ADDRESS}:{i}/receive_node_id",
                 json={
                     "node_id": NODE_ID,
-                    "port": int(PORT)
+                    "port": PORT
                 },
                 timeout=0.1
             )
