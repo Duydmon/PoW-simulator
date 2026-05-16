@@ -17,21 +17,15 @@ def home():
 
 @app.route("/start")
 def start_mining():
-
     if not miner.mining:
-
         miner.mining = True
-
         thread = threading.Thread(
             target=miner.mine
         )
-
         thread.start()
-
         return jsonify({
             "message": "Mining started"
         })
-
     return jsonify({
         "message": "Already mining"
     })

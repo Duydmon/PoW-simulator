@@ -63,23 +63,14 @@ def query_newest_block():
     row = cursor.fetchone()
     conn.close()
     block = {
-
         "block_hash": row[0],
-
         "previous_hash": row[1],
-
         "height": row[2],
-
         "timestamp": row[3],
-
         "difficulty": row[4],
-
         "miner": row[5],
-
         "data": row[6],
-
         "chain_work": row[7],
-
         "nonce": row[8]
     }
 
@@ -94,7 +85,6 @@ def get_tip_block_data() -> dict:
             block_hash,
             height,
             chain_work
-
         FROM blockchain
         WHERE is_main_chain = 1
         ORDER BY chain_work DESC

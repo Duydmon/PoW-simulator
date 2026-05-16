@@ -16,17 +16,9 @@ def run_server():
         debug=False
     )
 
-# -------------------
-# Menu
-# -------------------
-#3: thêm dữ liệu
-#4: xem blockchain
-#5: xem block mới nhất
-
 def menu():
     requests.get(URL)
     while True:
-
         print("\n1. Start Mining")
         print("2. Stop Mining")
         print("3. Add mempool")

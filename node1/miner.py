@@ -1,10 +1,8 @@
 import hashlib
 import json
 from typing import Any
-
 import database
 import time
-
 from config import NODE_ID, DIFFICULTY
 mining = False
 
@@ -23,7 +21,6 @@ def prepare_data_to_hash() -> tuple[str, list[Any]] | tuple[None, None]:
         }
         tx_id.append(row[3])
         transactions.append(tx)
-
     transactions_json = json.dumps(transactions, sort_keys=True)
     return transactions_json, tx_id
 
