@@ -17,7 +17,7 @@ def prepare_data_to_hash() -> tuple[str, list[Any]] | tuple[None, None]:
     if not mempool:
         return None, None
     transactions =[]
-    tx_id = []
+    message_hash = []
     for row in mempool:
         tx ={
             "hash": row[0],
@@ -25,16 +25,16 @@ def prepare_data_to_hash() -> tuple[str, list[Any]] | tuple[None, None]:
             "data": row[2],
             "node_id": row[3]
         }
-        tx_id.append(row[4])
+        message_hash.append(row[0])
         transactions.append(tx)
     transactions_json = json.dumps(transactions, sort_keys=True)
-    return transactions_json, tx_id
+    return transactions_json, message_hash
 
 def mine():
     global mining
     nonce = 0
-    data, message_id = prepare_data_to_hash()
-    if not data or not message_id:
+    data, message_hash = prepare_data_to_hash()
+    if not data or not message_hash:
         print("No more data in mempool")
         mining = False
     while mining:
@@ -68,7 +68,7 @@ def mine():
                     }
                 )
                 print(response.json())
-            database.mark_data_in_chain(message_id)
+            database.mark_data_in_chain(message_hash)
         else:
             nonce += 1
             print("mining...")

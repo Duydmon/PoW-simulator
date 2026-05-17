@@ -109,14 +109,14 @@ def get_tip_block_data() -> dict:
     }
     return data_for_hash
 
-def mark_data_in_chain(message_id_list):
+def mark_data_in_chain(message_hash_list):
     conn = sqlite3.connect('./db/blockchain.db')
     cursor = conn.cursor()
     cursor.executemany("""
                    UPDATE mempool
                    SET in_chain = 1
-                   WHERE id = ?
-                   """, [(tx_id,) for tx_id in message_id_list])
+                   WHERE hash = ?
+                   """, [(hash,) for hash in message_hash_list])
     conn.commit()
     conn.close()
 
