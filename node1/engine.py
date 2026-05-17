@@ -44,6 +44,10 @@ def add_to_mempool():
     data = body['data']
     node_id = body['node_id']
     time = body['time']
+    if database.check_data_if_in_db(data, node_id, time):
+        return jsonify({
+            "message": "Data already in database"
+        })
     database.add_data_mempool(data,node_id,time)
     return jsonify({
         "message": "Data added to mempool",

@@ -160,3 +160,20 @@ def add_new_block(block_data_dict, block_hash):
     ))
     conn.commit()
     conn.close()
+
+def check_data_if_in_db(data,node_id,timestamp):
+    data_to_hash = {
+        "data": data,
+        "node_id": node_id,
+        "timestamp": timestamp
+    }
+    hased_data = hashlib.sha256(json.dumps(data_to_hash, sort_keys=True).encode()).hexdigest()
+    conn = sqlite3.connect('./db/blockchain.db')
+    cursor = conn.cursor()
+    cursor.execute("""
+                   SELECT COUNT(*) FROM mempool
+                   WHERE hash = ?
+                   """, (hased_data,))
+    count = cursor.fetchone()[0]
+    conn.close()
+    return count>0
