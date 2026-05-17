@@ -5,6 +5,8 @@ import threading
 import miner
 import database
 from config import NODE_ID, PORT, NODE_LIST
+from node1 import network
+
 app = Flask(__name__)
 
 # -------------------
@@ -78,6 +80,10 @@ def receive_node_id():
 @app.route('/get_mined_block', methods=["POST"])
 def get_mined_block():
     body = request.get_json()
+    if not network.validate_block(body["block_data"],body["hashed_block"]):
+        return jsonify({
+            "message": "Block not valid"
+        })
     message_hash_list = []
     block_data_list = json.loads(body['block_data']['data'])
     for data in block_data_list:
