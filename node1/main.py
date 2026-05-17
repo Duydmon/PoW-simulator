@@ -24,6 +24,7 @@ def menu():
         print("3. Add mempool")
         print("4. Print Node List")
         print("5. Check newest block")
+        print("6. re-Announce")
         print("0. Exit")
 
         choice = input("Select: ")
@@ -52,15 +53,19 @@ def menu():
 
         elif choice == "3":
             data = input("Enter your data: ")
-            response = requests.post(
-                f"{URL}/add_mempool",
-                json={
-                    "data": data,
-                    "node_id": NODE_ID,
-                    "time": time.time()
-                }
-            )
-            print(response.json())
+            node_port_list = network.check_connection()
+            node_port_list.append(PORT)
+            print(node_port_list)
+            for port in node_port_list:
+                response = requests.post(
+                    f"http://{IP_ADDRESS}:{port}/add_mempool",
+                    json={
+                        "data": data,
+                        "node_id": NODE_ID,
+                        "time": time.time()
+                    }
+                )
+                print(response.json())
 
         elif choice == "4":
             print(NODE_LIST)
@@ -70,6 +75,9 @@ def menu():
                 f"{URL}/newest_block"
             )
             print(response.json())
+
+        elif choice == "6":
+            network.announce()
 
         elif choice == "0":
             break

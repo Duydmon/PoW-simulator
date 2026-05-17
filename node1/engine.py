@@ -71,3 +71,11 @@ def receive_node_id():
         "port": PORT
     })
 
+# @app.route("/receive_mempool", methods=["POST"])
+# def receive_mempool():
+#     body = request.get_json()
+#     data = body['data']
+#     node_id = body['node_id']
+#     time = body['time']
+
+

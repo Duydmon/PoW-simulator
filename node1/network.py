@@ -37,14 +37,14 @@ def announce():
 def check_connection():
     connected_port = []
     for node in NODE_LIST:
-        ports = NODE_LIST[node]["ports"]
-        for port in ports:
-            try:
-                response = requests.get(f"http://{IP_ADDRESS}:{port}/")
-                if response.status_code == 200: connected_port.append(port)
-            except requests.exceptions.ConnectionError:
-                continue
-            except requests.exceptions.Timeout:
-                continue
-            except Exception as e: print(f"Node {port}: {e}")
+        port = NODE_LIST[node]["port"]
+        try:
+            response = requests.get(f"http://{IP_ADDRESS}:{port}/")
+            if response.status_code == 200:
+                connected_port.append(port)
+        except requests.exceptions.ConnectionError:
+            continue
+        except requests.exceptions.Timeout:
+            continue
+        except Exception as e: print(f"Node {port}: {e}")
     return connected_port
