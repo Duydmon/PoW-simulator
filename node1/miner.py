@@ -1,9 +1,14 @@
 import hashlib
 import json
 from typing import Any
+
+import requests
+
 import database
 import time
-from config import NODE_ID, DIFFICULTY
+from config import NODE_ID, DIFFICULTY, NODE_LIST, IP_ADDRESS
+from node1 import network
+
 mining = False
 
 def prepare_data_to_hash() -> tuple[str, list[Any]] | tuple[None, None]:
@@ -52,6 +57,17 @@ def mine():
             print(hashed_block)
             print(this_block_data_for_hash)
             database.add_new_block(this_block_data, hashed_block)
+            node_port_list = network.check_connection()
+            for port in node_port_list:
+                response = requests.post(
+                    f"http://{IP_ADDRESS}:{port}/get_mined_block",
+                    json = {
+                        "block_data": this_block_data,
+                        "hashed_block": hashed_block
+                        #sau này thêm hash của message đã đưa vào block nữa.
+                    }
+                )
+                print(response.json())
             database.mark_data_in_chain(message_id)
         else:
             nonce += 1

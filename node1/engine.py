@@ -75,6 +75,14 @@ def receive_node_id():
         "port": PORT
     })
 
+@app.route('/get_mined_block', methods=["POST"])
+def get_mined_block():
+    body = request.get_json()
+    database.add_new_block(body["block_data"], body["hashed_block"])
+    return jsonify({
+        "message": f"Block sent to {PORT}"
+    })
+
 # @app.route("/receive_mempool", methods=["POST"])
 # def receive_mempool():
 #     body = request.get_json()

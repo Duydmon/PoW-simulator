@@ -177,3 +177,11 @@ def check_data_if_in_db(data,node_id,timestamp):
     count = cursor.fetchone()[0]
     conn.close()
     return count>0
+
+# def get_all_block_data():
+#     conn = sqlite3.connect('./db/blockchain.db')
+#     cursor = conn.cursor()
+#     cursor.execute("""
+#                    SELECT * FROM blockchain
+#                    WHERE is_main_chain = 1
+#
