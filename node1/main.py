@@ -56,13 +56,14 @@ def menu():
             node_port_list = network.check_connection()
             node_port_list.append(PORT)
             print(node_port_list)
+            timestamp = time.time()
             for port in node_port_list:
                 response = requests.post(
                     f"http://{IP_ADDRESS}:{port}/add_mempool",
                     json={
                         "data": data,
                         "node_id": NODE_ID,
-                        "time": time.time()
+                        "time": timestamp
                     }
                 )
                 print(response.json())
