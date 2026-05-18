@@ -130,3 +130,16 @@ def validaate_data_in_block(data_in_block_str:str):
         #block tạo thì sẽ validate sau
     print("Data validated")
     return True
+
+def send_mined_block(this_block_data: dict,hashed_block:str):
+    node_port_list = check_connection()
+    for port in node_port_list:
+        response = requests.post(
+            f"http://{IP_ADDRESS}:{port}/get_mined_block",
+            json={
+                "block_data": this_block_data,
+                "hashed_block": hashed_block
+                # sau này thêm hash của message đã đưa vào block nữa.
+            }
+        )
+        print(response.json())
