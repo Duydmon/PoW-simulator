@@ -120,7 +120,7 @@ def mark_data_in_chain(message_hash_list):
     conn.commit()
     conn.close()
 
-def add_new_block(block_data_dict, block_hash):
+def add_new_block(block_data_dict, block_hash, not_main_chain =0):
     # this_block_data = {
     #     "previous_hash": previous_block_data["block_hash"],
     #     "height": previous_block_data["height"] + 1,
@@ -131,6 +131,9 @@ def add_new_block(block_data_dict, block_hash):
     #     "chain_work": previous_block_data["chain_work"] + DIFFICULTY,
     #     "nonce": nonce
     # }
+    is_main_chain_value = 1
+    if not_main_chain == 1:
+        is_main_chain_value = 0
     conn = sqlite3.connect('./db/blockchain.db')
     cursor = conn.cursor()
     cursor.execute("""
@@ -146,7 +149,7 @@ def add_new_block(block_data_dict, block_hash):
         nonce,
         is_main_chain
         ) 
-    VALUES ( ?, ?, ?, ?, ? ,? ,? ,? ,?, 1)
+    VALUES ( ?, ?, ?, ?, ? ,? ,? ,? ,?, ?)
         """, (
         block_hash,
         block_data_dict["previous_hash"],
@@ -156,7 +159,8 @@ def add_new_block(block_data_dict, block_hash):
         block_data_dict["miner"],
         block_data_dict["data"],
         block_data_dict["chain_work"],
-        block_data_dict["nonce"]
+        block_data_dict["nonce"],
+        is_main_chain_value
     ))
     conn.commit()
     conn.close()

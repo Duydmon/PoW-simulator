@@ -57,17 +57,18 @@ def mine():
             print(hashed_block)
             print(this_block_data_for_hash)
             database.add_new_block(this_block_data, hashed_block)
-            node_port_list = network.check_connection()
-            for port in node_port_list:
-                response = requests.post(
-                    f"http://{IP_ADDRESS}:{port}/get_mined_block",
-                    json = {
-                        "block_data": this_block_data,
-                        "hashed_block": hashed_block
-                        #sau này thêm hash của message đã đưa vào block nữa.
-                    }
-                )
-                print(response.json())
+            network.send_mined_block(this_block_data, hashed_block)
+            # node_port_list = network.check_connection()
+            # for port in node_port_list:
+            #     response = requests.post(
+            #         f"http://{IP_ADDRESS}:{port}/get_mined_block",
+            #         json = {
+            #             "block_data": this_block_data,
+            #             "hashed_block": hashed_block
+            #             #sau này thêm hash của message đã đưa vào block nữa.
+            #         }
+            #     )
+            #     print(response.json())
             database.mark_data_in_chain(message_hash)
         else:
             nonce += 1
