@@ -84,16 +84,16 @@ def get_mined_block():
         return jsonify({
             "message": "Block not valid"
         })
-    tip_block_data = database.get_tip_block_data()
-    not_main_chain = 0
-    if tip_block_data["block_hash"] != body["block_data"]["previous_hash"]:
-        not_main_chain = 1
+    tip_block_data = database.get_active_tip_block_data()
+    is_main_chain = 0
+    if tip_block_data["block_hash"] == body["block_data"]["previous_hash"]:
+        is_main_chain = 1
     message_hash_list = []
     block_data_list = json.loads(body['block_data']['data'])
     for data in block_data_list:
         message_hash_list.append(data['hash'])
     database.mark_data_in_chain(message_hash_list)
-    database.add_new_block(body["block_data"], body["hashed_block"],not_main_chain)
+    database.add_new_block(body["block_data"], body["hashed_block"],is_main_chain)
     return jsonify({
         "message": f"Block sent to {PORT}"
     })

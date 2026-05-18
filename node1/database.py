@@ -86,7 +86,7 @@ def query_newest_block():
 
     return block
 
-def get_tip_block_data() -> dict:
+def get_active_tip_block_data() -> dict:
     conn = sqlite3.connect('./db/blockchain.db')
     cursor = conn.cursor()
     cursor.execute("""
@@ -120,7 +120,7 @@ def mark_data_in_chain(message_hash_list):
     conn.commit()
     conn.close()
 
-def add_new_block(block_data_dict, block_hash, not_main_chain =0):
+def add_new_block(block_data_dict, block_hash, main_chain_value = 1):
     # this_block_data = {
     #     "previous_hash": previous_block_data["block_hash"],
     #     "height": previous_block_data["height"] + 1,
@@ -131,9 +131,6 @@ def add_new_block(block_data_dict, block_hash, not_main_chain =0):
     #     "chain_work": previous_block_data["chain_work"] + DIFFICULTY,
     #     "nonce": nonce
     # }
-    is_main_chain_value = 1
-    if not_main_chain == 1:
-        is_main_chain_value = 0
     conn = sqlite3.connect('./db/blockchain.db')
     cursor = conn.cursor()
     cursor.execute("""
@@ -160,7 +157,7 @@ def add_new_block(block_data_dict, block_hash, not_main_chain =0):
         block_data_dict["data"],
         block_data_dict["chain_work"],
         block_data_dict["nonce"],
-        is_main_chain_value
+        main_chain_value
     ))
     conn.commit()
     conn.close()
@@ -190,3 +187,28 @@ def query_block_by_hash(hash):
     row = cursor.fetchone()
     conn.close()
     return row
+
+def get_tip_block_list()->list[dict]:
+    conn = sqlite3.connect('./db/blockchain.db')
+    cursor = conn.cursor()
+    cursor.execute(""""
+                   SELECT *
+                   FROM blockchain b1
+                   WHERE NOT EXISTS (SELECT 1
+                       FROM blockchain b2
+                       WHERE b2.previous_hash = b1.block_hash
+                   )
+                   ORDER BY chain_work DESC;""")
+    rows = cursor.fetchall()
+    conn.close()
+    tip_block_list = []
+    for row in rows:
+        tip_block_data = {
+            "block_hash": row[0],
+            "previous_hash": row[1],
+            "height": row[2],
+            "chain_work": row[7],
+            "is_main_chain": row[9]
+        }
+        tip_block_list.append(tip_block_data)
+    return tip_block_list
