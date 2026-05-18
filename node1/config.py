@@ -5,3 +5,5 @@ NODE_ID = hashlib.sha256((IP_ADDRESS+PORT).encode()).hexdigest()
 URL = f'http://{IP_ADDRESS}:{PORT}'
 DIFFICULTY = 3
 NODE_LIST = {}
+BLOCK_COUNT = 0
+BLOCK_LIMIT = 3

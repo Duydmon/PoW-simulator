@@ -2,7 +2,7 @@
 import hashlib
 import json
 import sqlite3
-import time
+from config import BLOCK_COUNT, BLOCK_LIMIT
 
 # khi đưa data vào, sẽ ký số và
 
@@ -131,6 +131,8 @@ def add_new_block(block_data_dict, block_hash, main_chain_value = 1):
     #     "chain_work": previous_block_data["chain_work"] + DIFFICULTY,
     #     "nonce": nonce
     # }
+    global BLOCK_COUNT
+    BLOCK_COUNT += 1
     conn = sqlite3.connect('./db/blockchain.db')
     cursor = conn.cursor()
     cursor.execute("""
@@ -161,6 +163,9 @@ def add_new_block(block_data_dict, block_hash, main_chain_value = 1):
     ))
     conn.commit()
     conn.close()
+    if BLOCK_COUNT >= BLOCK_LIMIT:
+        BLOCK_COUNT = 0
+        reorg()
 
 def check_data_if_in_db(data,node_id,timestamp):
     data_to_hash = {
@@ -191,7 +196,7 @@ def query_block_by_hash(hash):
 def get_tip_block_list()->list[dict]:
     conn = sqlite3.connect('./db/blockchain.db')
     cursor = conn.cursor()
-    cursor.execute(""""
+    cursor.execute("""
                    SELECT *
                    FROM blockchain b1
                    WHERE NOT EXISTS (SELECT 1
@@ -232,6 +237,9 @@ def reorg():
     highest_work_chain_hash = get_chain_from_tip(highest_work_block_hash)
     # tìm common root (function)
     last_share_root = get_latest_shared_root(current_tip_chain_hash,highest_work_chain_hash)
+    if not last_share_root:
+        print("No last share root")
+        return
     old_block_hash_list_to_change = get_blocks_after_shared_root(last_share_root,current_tip_chain_hash)
     new_block_hash_list_to_change = get_blocks_after_shared_root(last_share_root,highest_work_chain_hash)
     mark_block_in_database(new_block_hash_list_to_change,1)
@@ -304,7 +312,7 @@ def get_chain_from_tip(tip_hash):
     )
     SELECT block_hash
     FROM chain_path
-    ORDER BY height DESC
+    ORDER BY height ASC
     """, (tip_hash,))
     rows = cursor.fetchall()
     conn.close()
