@@ -109,14 +109,14 @@ def get_active_tip_block_data() -> dict:
     }
     return data_for_hash
 
-def mark_data_in_chain(message_hash_list):
+def mark_data_in_chain(message_hash_list,chain_status = 1):
     conn = sqlite3.connect('./db/blockchain.db')
     cursor = conn.cursor()
     cursor.executemany("""
                    UPDATE mempool
-                   SET in_chain = 1
+                   SET in_chain = ?
                    WHERE hash = ?
-                   """, [(hash,) for hash in message_hash_list])
+                   """, [(chain_status,hash) for hash in message_hash_list])
     conn.commit()
     conn.close()
 
@@ -223,7 +223,7 @@ def reorg():
     tip_block_list = get_tip_block_list()
     #duyệt danh sách, tìm tip có nhiều work nhất
     highest_work = 0
-    highest_work_block_hash:str = None
+    highest_work_block_hash:str = ""
     for block_data in tip_block_list:
         if block_data["chain_work"] > highest_work:
             highest_work = block_data["chain_work"]
@@ -246,6 +246,33 @@ def reorg():
     print("Main chain updated")
     mark_block_in_database(old_block_hash_list_to_change,0)
     print("old chain updated")
+    block_data_in_old_chain_list = get_data_in_block_by_hash(old_block_hash_list_to_change)
+    block_data_in_new_chain_list = get_data_in_block_by_hash(new_block_hash_list_to_change)
+    #lấy list dữ liệu trong chain cũ
+    data_hash_in_old_chain_json_list = []
+    #weird data save in block in blockchain: str of list of json(dict)
+    #[{"data": "data in chain 1", "hash": "b6d9ab2cb7d5f8c319561d678215379b0cd038fa45e2cbb6cc967f3f6162792a", "node_id": "54dfa451cf9896851bdf9b37061062b5297b8fb83a061c46e5054d8118667daa", "time": 1779117665.6297834}]
+    for i in block_data_in_old_chain_list:
+        list_of_json = json.loads(i)
+        for a in list_of_json:
+            data_hash_in_old_chain_json_list.append(a["hash"])
+    #lấy list dữ liệu trong chain mới
+    data_hash_in_new_chain_json_list = []
+    for i in block_data_in_new_chain_list:
+        list_of_json = json.loads(i)
+        for a in list_of_json:
+            data_hash_in_new_chain_json_list.append(a["hash"])
+    data_hash_in_old_chain_json_set = set(data_hash_in_old_chain_json_list)
+    data_hash_in_new_chain_json_set = set(data_hash_in_new_chain_json_list)
+    # Kiểm tra xem trong chain cũ có dữ liệu trong chain mới không
+    data_to_rollback = (data_hash_in_old_chain_json_set - data_hash_in_new_chain_json_set)
+    data_to_in_chain = (data_hash_in_new_chain_json_set - data_hash_in_old_chain_json_set)
+    # set mempool not in_chain.
+    # set mempool in_chain
+    mark_data_in_chain(data_to_rollback,0)
+    mark_data_in_chain(data_to_in_chain,1)
+    print("Mempool re-organized")
+    # the data is so fucking weird
 
 def mark_block_in_database(
         block_hash_list: list,
@@ -318,3 +345,16 @@ def get_chain_from_tip(tip_hash):
     conn.close()
     return [row[0] for row in rows]
 
+def get_data_in_block_by_hash(block_hash_list: list) -> list:
+    conn = sqlite3.connect('./db/blockchain.db')
+    cursor = conn.cursor()
+    placeholders = ",".join(["?"] * len(block_hash_list))
+    cursor.execute(f"""
+            SELECT data
+            FROM blockchain
+            WHERE block_hash IN ({placeholders})
+        """, block_hash_list)
+    rows = cursor.fetchall()
+    rows_list = [row[0] for row in rows]
+    conn.close()
+    return rows_list
