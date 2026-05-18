@@ -1,4 +1,6 @@
 #chứa menu và lựa chọn, đóng vai trò gọi chức năng và hiển thị cho người dùng
+from asyncio import wait
+
 from engine import app
 import threading
 import requests
@@ -18,6 +20,7 @@ def run_server():
 
 def menu():
     requests.get(URL)
+    time.sleep(0.1)
     while True:
         print("\n1. Start Mining")
         print("2. Stop Mining")

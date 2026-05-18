@@ -212,3 +212,101 @@ def get_tip_block_list()->list[dict]:
         }
         tip_block_list.append(tip_block_data)
     return tip_block_list
+
+def reorg():
+    # lấy danh sách dữ liệu của các tip block
+    tip_block_list = get_tip_block_list()
+    #duyệt danh sách, tìm tip có nhiều work nhất
+    highest_work = 0
+    highest_work_block_hash:str = None
+    for block_data in tip_block_list:
+        if block_data["chain_work"] > highest_work:
+            highest_work = block_data["chain_work"]
+            highest_work_block_hash = block_data["block_hash"]
+    current_tip_data = get_active_tip_block_data()
+    if highest_work_block_hash == current_tip_data["block_hash"]:
+        print("Active chain is the longest, no re-organize")
+        return
+    #query recursive để lấy tất cả hash của nhánh của tip
+    current_tip_chain_hash = get_chain_from_tip(current_tip_data["block_hash"])
+    highest_work_chain_hash = get_chain_from_tip(highest_work_block_hash)
+    # tìm common root (function)
+    last_share_root = get_latest_shared_root(current_tip_chain_hash,highest_work_chain_hash)
+    old_block_hash_list_to_change = get_blocks_after_shared_root(last_share_root,current_tip_chain_hash)
+    new_block_hash_list_to_change = get_blocks_after_shared_root(last_share_root,highest_work_chain_hash)
+    mark_block_in_database(new_block_hash_list_to_change,1)
+    print("Main chain updated")
+    mark_block_in_database(old_block_hash_list_to_change,0)
+    print("old chain updated")
+
+def mark_block_in_database(
+        block_hash_list: list,
+        in_chain_value: int
+):
+    conn = sqlite3.connect('./db/blockchain.db')
+    cursor = conn.cursor()
+    cursor.executemany("""
+        UPDATE blockchain
+        SET is_main_chain = ?
+        WHERE block_hash = ?
+    """, [
+        (in_chain_value, block_hash)
+        for block_hash in block_hash_list
+    ])
+    conn.commit()
+    conn.close()
+
+def get_blocks_after_shared_root(
+        shared_root: str,
+        chain_hash_list: list
+) -> list:
+
+    try:
+        root_index = chain_hash_list.index(shared_root)
+
+        return chain_hash_list[root_index+1:]
+
+    except ValueError:
+        print("Shared root not found")
+        return []
+
+def get_latest_shared_root(chain1: list, chain2: list)-> str:
+    latest_shared:str = ""
+    for block1, block2 in zip(chain1, chain2):
+        if block1 == block2:
+            latest_shared = block1
+        else:
+            break
+    return latest_shared
+
+def get_chain_from_tip(tip_hash):
+    conn = sqlite3.connect('./db/blockchain.db')
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    WITH RECURSIVE chain_path AS (
+        SELECT
+            block_hash,
+            previous_hash,
+            height
+        FROM blockchain
+        WHERE block_hash = ?
+            
+        UNION ALL
+            
+        SELECT
+            b.block_hash,
+            b.previous_hash,
+            b.height
+        FROM blockchain b
+        JOIN chain_path c
+        ON b.block_hash = c.previous_hash
+    )
+    SELECT block_hash
+    FROM chain_path
+    ORDER BY height DESC
+    """, (tip_hash,))
+    rows = cursor.fetchall()
+    conn.close()
+    return [row[0] for row in rows]
+
