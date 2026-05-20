@@ -37,12 +37,13 @@ def mine():
     if not data or not message_hash:
         print("No more data in mempool")
         mining = False
+    timestamp = time.time()
     while mining:
         previous_block_data = database.get_active_tip_block_data() #block_hash, height, chain_work
         this_block_data ={
             "previous_hash": previous_block_data["block_hash"],
             "height": previous_block_data["height"]+1,
-            "timestamp": time.time(),
+            "timestamp": timestamp,
             "difficulty": DIFFICULTY,
             "miner": NODE_ID,
             "data": data,
