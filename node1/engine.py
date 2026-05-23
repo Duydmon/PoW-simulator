@@ -8,7 +8,7 @@ import miner
 import database
 from config import NODE_ID, PORT, NODE_LIST
 from node1 import network
-from node1.network import get_missing_block
+
 
 app = Flask(__name__)
 
@@ -83,7 +83,7 @@ def receive_node_id():
 @app.route('/get_mined_block', methods=["POST"])
 def get_mined_block():
     body = request.get_json()
-    validate_result = network.validate_block(body["block_data"], body["hashed_block"],body["node_id"])
+    validate_result = network.validate_block(body["block_data"], body["hashed_block"],body["sender_node_id"])
     if validate_result == False:
         return jsonify({
             "message": "Block not added to database"
@@ -118,7 +118,7 @@ def get_mined_block():
 @app.route('/get_missing_branch', methods=["POST"])
 def get_missing_branch():
     body = request.get_json()
-    node_id = body['node_id']
+    receiver_node_id = body['receiver_node_id']
     requested_block_hash = body['block_hash']
     chain_hash_list = body['hash_list']
     requested_chain_hash_list = database.get_chain_from_tip(requested_block_hash)
@@ -142,9 +142,10 @@ def get_missing_branch():
             'chain_work': block_data[7],
             'nonce': block_data[8]
         }
-        network.send_block_to_node(block_data_dict, NODE_ID)
+        network.send_block_to_node(block_data_dict, receiver_node_id)
     return jsonify({
-        "message": "Missing branch sent"
+        "message": "Missing branch sent",
+        "status": True
     })
 
     #nhận: block yêu cầu + list dữ liệu

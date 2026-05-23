@@ -85,7 +85,7 @@ def check_connection():
 # }
 #transactions_json = json.dumps(transactions, sort_keys=True)
 
-def validate_block(block_data_json:dict,block_hash:str,node_id:str):
+def validate_block(block_data_json:dict, block_hash:str, sender_node_id:str):
      hash_recalculate = hashlib.sha256(json.dumps(block_data_json,sort_keys=True).encode()).hexdigest()
      if hash_recalculate != block_hash:
          print("hash mismatch")
@@ -94,7 +94,7 @@ def validate_block(block_data_json:dict,block_hash:str,node_id:str):
      if not previous_block_data:
          print("Previous block not found")
 
-         if get_missing_block(block_hash,node_id):
+         if get_missing_block(block_hash, sender_node_id):
              print("getting missing block")
          else:
              print("missing block not in branch")
@@ -139,22 +139,22 @@ def send_mined_block(this_block_data: dict,hashed_block:str):
             json={
                 "block_data": this_block_data,
                 "hashed_block": hashed_block,
-                "node_id": NODE_ID
+                "sender_node_id": NODE_ID
                 # sau này thêm hash của message đã đưa vào block nữa.
             }
         )
         print(response.json())
 
-def send_block_to_node(block_data_dict, node_id):
-    port = NODE_LIST[node_id]["port"]
+def send_block_to_node(block_data_dict, receiver_node_id):
+    port = NODE_LIST[receiver_node_id]["port"]
     block_data_to_add = block_data_dict.copy()
     block_hash = block_data_to_add.pop("block_hash")
     response = requests.post(
         f'http://{IP_ADDRESS}:{port}/get_mined_block',
         json={
             "block_data": block_data_to_add,
-            "hased_block": block_hash,
-            "node_id": NODE_ID
+            "hashed_block": block_hash,
+            "sender_node_id": NODE_ID
         }
     )
     print(response.json())
@@ -169,12 +169,12 @@ def send_block_to_node(block_data_dict, node_id):
 #             "chain_work": previous_block_data["chain_work"]+DIFFICULTY,
 #             "nonce": nonce
 #         }
-def get_missing_block(block_hash:str,node_id:str):
-    port = NODE_LIST[node_id]["port"]
+def get_missing_block(block_hash:str, sender_node_id:str):
+    sender_port = NODE_LIST[sender_node_id]["port"]
     tip_hash = database.get_active_tip_block_data()
     main_chain_hash_list = database.get_chain_from_tip(tip_hash["block_hash"])
-    response = requests.post(f"http://{IP_ADDRESS}:{port}/get_missing_branch",
-                            json={"node_id": node_id,
+    response = requests.post(f"http://{IP_ADDRESS}:{sender_port}/get_missing_branch",
+                            json={"receiver_node_id": NODE_ID,
                                   "block_hash": block_hash,
                                   "hash_list": main_chain_hash_list
                                   }
