@@ -1,4 +1,4 @@
-#chứa menu và lựa chọn, đóng vai trò gọi chức năng và hiển thị cho người dùng
+# chứa menu và lựa chọn, đóng vai trò gọi chức năng và hiển thị cho người dùng
 from asyncio import wait
 
 from engine import app
@@ -7,6 +7,7 @@ import requests
 import time
 import network
 from config import IP_ADDRESS, PORT, NODE_ID, URL, NODE_LIST
+
 
 # -------------------
 # Flask Server Thread
@@ -17,6 +18,7 @@ def run_server():
         port=int(PORT),
         debug=False
     )
+
 
 def menu():
     requests.get(URL)
@@ -58,7 +60,6 @@ def menu():
             data = input("Enter your data: ")
             node_port_list = network.check_connection()
             node_port_list.append(PORT)
-            print(node_port_list)
             timestamp = time.time()
             for port in node_port_list:
                 response = requests.post(

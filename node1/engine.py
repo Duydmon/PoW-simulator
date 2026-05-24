@@ -1,4 +1,4 @@
-#chứa các đường dẫn đến các hàm gọi chức năng.
+# chứa các đường dẫn đến các hàm gọi chức năng.
 import json
 
 import requests
@@ -9,8 +9,8 @@ import database
 from config import NODE_ID, PORT, NODE_LIST
 from node1 import network
 
-
 app = Flask(__name__)
+
 
 # -------------------
 # Routes
@@ -18,7 +18,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return jsonify({"message":"Blockchain Node Running"})
+    return jsonify({"message": "Blockchain Node Running"})
+
 
 @app.route("/start")
 def start_mining():
@@ -35,6 +36,7 @@ def start_mining():
         "message": "Already mining"
     })
 
+
 @app.route("/newest_block")
 def newest_block():
     new_block = database.query_newest_block()
@@ -42,6 +44,7 @@ def newest_block():
         new_block,
     )
     return block_json_str
+
 
 @app.route("/add_mempool", methods=["POST"])
 def add_to_mempool():
@@ -53,20 +56,21 @@ def add_to_mempool():
         return jsonify({
             "message": "Data already in database"
         })
-    database.add_data_mempool(data,node_id,time)
+    database.add_data_mempool(data, node_id, time)
     return jsonify({
         "message": "Data added to mempool",
         "data": f'{data} from node {node_id}'
     })
 
+
 @app.route("/stop")
 def stop_mining():
-
     miner.mining = False
 
     return jsonify({
         "message": "Mining stopped"
     })
+
 
 @app.route("/receive_node_id", methods=["POST"])
 def receive_node_id():
@@ -80,10 +84,11 @@ def receive_node_id():
         "port": PORT
     })
 
+
 @app.route('/get_mined_block', methods=["POST"])
 def get_mined_block():
     body = request.get_json()
-    validate_result = network.validate_block(body["block_data"], body["hashed_block"],body["sender_node_id"])
+    validate_result = network.validate_block(body["block_data"], body["hashed_block"], body["sender_node_id"])
     if validate_result == False:
         return jsonify({
             "message": "Block not added to database"
@@ -97,10 +102,11 @@ def get_mined_block():
     for data in block_data_list:
         message_hash_list.append(data['hash'])
     database.mark_data_in_chain(message_hash_list)
-    database.add_new_block(body["block_data"], body["hashed_block"],is_main_chain)
+    database.add_new_block(body["block_data"], body["hashed_block"], is_main_chain)
     return jsonify({
         "message": f"Block sent to {PORT}"
     })
+
 
 # INSERT INTO blockchain(
 #     block_hash,
@@ -114,7 +120,7 @@ def get_mined_block():
 #     nonce,
 #     is_main_chain
 # )
-#nhận yêu cầu và gửi full branch
+# nhận yêu cầu và gửi full branch
 @app.route('/get_missing_branch', methods=["POST"])
 def get_missing_branch():
     body = request.get_json()
@@ -122,13 +128,13 @@ def get_missing_branch():
     requested_block_hash = body['block_hash']
     chain_hash_list = body['hash_list']
     requested_chain_hash_list = database.get_chain_from_tip(requested_block_hash)
-    share_root = database.get_latest_shared_root(chain_hash_list,requested_chain_hash_list)
+    share_root = database.get_latest_shared_root(chain_hash_list, requested_chain_hash_list)
     if not share_root:
         return jsonify({
             "message": "Share root not found in database, block not added",
             "status": False
         })
-    hash_list_to_send = database.get_blocks_after_shared_root(share_root,requested_chain_hash_list)
+    hash_list_to_send = database.get_blocks_after_shared_root(share_root, requested_chain_hash_list)
     for hash in hash_list_to_send:
         block_data = database.query_block_by_hash(hash)
         block_data_dict = {
@@ -148,9 +154,7 @@ def get_missing_branch():
         "status": True
     })
 
-    #nhận: block yêu cầu + list dữ liệu
-    #tìm share root #nếu không tìm được thì break và trả lại lỗi.
-    #liên tục lặp qua chuôi để lấy dữ liệu và gọi thêm vào.
+    # nhận: block yêu cầu + list dữ liệu
+    # tìm share root #nếu không tìm được thì break và trả lại lỗi.
+    # liên tục lặp qua chuôi để lấy dữ liệu và gọi thêm vào.
     # return
-
-

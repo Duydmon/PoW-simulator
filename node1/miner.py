@@ -11,15 +11,16 @@ from node1 import network
 
 mining = False
 
+
 def prepare_data_to_hash() -> tuple[str, list[Any]] | tuple[None, None]:
     global mining
     mempool = database.get_data_from_mempool()
     if not mempool:
         return None, None
-    transactions =[]
+    transactions = []
     message_hash = []
     for row in mempool:
-        tx ={
+        tx = {
             "hash": row[0],
             "time": row[1],
             "data": row[2],
@@ -30,6 +31,7 @@ def prepare_data_to_hash() -> tuple[str, list[Any]] | tuple[None, None]:
     transactions_json = json.dumps(transactions, sort_keys=True)
     return transactions_json, message_hash
 
+
 def mine():
     global mining
     nonce = 0
@@ -39,20 +41,20 @@ def mine():
         mining = False
     timestamp = time.time()
     while mining:
-        previous_block_data = database.get_active_tip_block_data() #block_hash, height, chain_work
-        this_block_data ={
+        previous_block_data = database.get_active_tip_block_data()  # block_hash, height, chain_work
+        this_block_data = {
             "previous_hash": previous_block_data["block_hash"],
-            "height": previous_block_data["height"]+1,
+            "height": previous_block_data["height"] + 1,
             "timestamp": timestamp,
             "difficulty": DIFFICULTY,
             "miner": NODE_ID,
             "data": data,
-            "chain_work": previous_block_data["chain_work"]+DIFFICULTY,
+            "chain_work": previous_block_data["chain_work"] + DIFFICULTY,
             "nonce": nonce
         }
         this_block_data_for_hash = json.dumps(this_block_data, sort_keys=True)
         hashed_block = hashlib.sha256(this_block_data_for_hash.encode()).hexdigest()
-        if hashed_block.startswith("0"*DIFFICULTY):
+        if hashed_block.startswith("0" * DIFFICULTY):
             mining = False
             print("mine success")
             print(hashed_block)
@@ -76,5 +78,5 @@ def mine():
             print("mining...")
             print(f"Failed hassh:{hashed_block}")
 
-#cần trả lại kiểm soát về menu
-#khi xong thì vẫn dừng mine. cần thêm cái để mine đến khi mempool rỗng, khi nào mempool có thì tiếp tục mine.
+# cần trả lại kiểm soát về menu
+# khi xong thì vẫn dừng mine. cần thêm cái để mine đến khi mempool rỗng, khi nào mempool có thì tiếp tục mine.

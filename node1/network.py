@@ -1,4 +1,4 @@
-#chứa các hàm giúp giao tiếp với node khác trong mạng lưới
+# chứa các hàm giúp giao tiếp với node khác trong mạng lưới
 import hashlib
 import json
 import time
@@ -52,8 +52,10 @@ def check_connection():
             continue
         except requests.exceptions.Timeout:
             continue
-        except Exception as e: print(f"Node {port}: {e}")
+        except Exception as e:
+            print(f"Node {port}: {e}")
     return connected_port
+
 
 # CREATE TABLE blockchain(
 #  0   block_hash TEXT PRIMARY KEY,
@@ -83,55 +85,56 @@ def check_connection():
 #     "data": row[2],
 #     "node_id": row[3]
 # }
-#transactions_json = json.dumps(transactions, sort_keys=True)
+# transactions_json = json.dumps(transactions, sort_keys=True)
 
-def validate_block(block_data_json:dict, block_hash:str, sender_node_id:str):
-     hash_recalculate = hashlib.sha256(json.dumps(block_data_json,sort_keys=True).encode()).hexdigest()
-     if hash_recalculate != block_hash:
-         print("hash mismatch")
-         return False
-     previous_block_data = database.query_block_by_hash(block_data_json["previous_hash"])
-     if not previous_block_data:
-         print("Previous block not found")
+def validate_block(block_data_json: dict, block_hash: str, sender_node_id: str):
+    hash_recalculate = hashlib.sha256(json.dumps(block_data_json, sort_keys=True).encode()).hexdigest()
+    if hash_recalculate != block_hash:
+        print("hash mismatch")
+        return False
+    previous_block_data = database.query_block_by_hash(block_data_json["previous_hash"])
+    if not previous_block_data:
+        print("Previous block not found")
+        if get_missing_block(block_hash, sender_node_id):
+            print("getting missing block")
+        else:
+            print("missing block not in branch")
+        return False
+    if previous_block_data[2] + 1 != block_data_json["height"]:
+        print("Previous block height mismatch")
+        return False
+    if block_data_json["difficulty"] != DIFFICULTY:
+        print("Block difficulty mismatch")
+        return False
+    # sau này validate miner sử dụng chứng thư số
+    if block_data_json["chain_work"] - block_data_json["difficulty"] != previous_block_data[7]:
+        print("Block difficulty mismatch")
+        return False
+    if not validaate_data_in_block(block_data_json["data"]):
+        print("Data mismatch")
+        return False
+    print("Block validated")
+    return True
 
-         if get_missing_block(block_hash, sender_node_id):
-             print("getting missing block")
-         else:
-             print("missing block not in branch")
-         return False
-     if previous_block_data[2]+1 != block_data_json["height"]:
-         print("Previous block height mismatch")
-         return False
-     if block_data_json["difficulty"] != DIFFICULTY:
-         print("Block difficulty mismatch")
-         return False
-     #sau này validate miner sử dụng chứng thư số
-     if block_data_json["chain_work"]- block_data_json["difficulty"] != previous_block_data[7]:
-         print("Block difficulty mismatch")
-         return False
-     if not validaate_data_in_block(block_data_json["data"]):
-         print("Data mismatch")
-         return False
-     print("Block validated")
-     return True
 
-def validaate_data_in_block(data_in_block_str:str):
+def validaate_data_in_block(data_in_block_str: str):
     data_list = json.loads(data_in_block_str)
     for data in data_list:
-        data_to_hash ={
+        data_to_hash = {
             "data": data["data"],
             "node_id": data["node_id"],
             "timestamp": data["time"],
         }
-        recaculate_hash = hashlib.sha256(json.dumps(data_to_hash,sort_keys=True).encode()).hexdigest()
+        recaculate_hash = hashlib.sha256(json.dumps(data_to_hash, sort_keys=True).encode()).hexdigest()
         if recaculate_hash != data["hash"]:
             print("Hash mismatch")
             return False
-        #block tạo thì sẽ validate sau
+        # block tạo thì sẽ validate sau
     print("Data validated")
     return True
 
-def send_mined_block(this_block_data: dict,hashed_block:str):
+
+def send_mined_block(this_block_data: dict, hashed_block: str):
     node_port_list = check_connection()
     for port in node_port_list:
         response = requests.post(
@@ -144,6 +147,7 @@ def send_mined_block(this_block_data: dict,hashed_block:str):
             }
         )
         print(response.json())
+
 
 def send_block_to_node(block_data_dict, receiver_node_id):
     port = NODE_LIST[receiver_node_id]["port"]
@@ -159,6 +163,7 @@ def send_block_to_node(block_data_dict, receiver_node_id):
     )
     print(response.json())
 
+
 # this_block_data ={
 #             "previous_hash": previous_block_data["block_hash"],
 #             "height": previous_block_data["height"]+1,
@@ -169,16 +174,16 @@ def send_block_to_node(block_data_dict, receiver_node_id):
 #             "chain_work": previous_block_data["chain_work"]+DIFFICULTY,
 #             "nonce": nonce
 #         }
-def get_missing_block(block_hash:str, sender_node_id:str):
+def get_missing_block(block_hash: str, sender_node_id: str):
     sender_port = NODE_LIST[sender_node_id]["port"]
     tip_hash = database.get_active_tip_block_data()
     main_chain_hash_list = database.get_chain_from_tip(tip_hash["block_hash"])
     response = requests.post(f"http://{IP_ADDRESS}:{sender_port}/get_missing_branch",
-                            json={"receiver_node_id": NODE_ID,
-                                  "block_hash": block_hash,
-                                  "hash_list": main_chain_hash_list
-                                  }
-                            )
+                             json={"receiver_node_id": NODE_ID,
+                                   "block_hash": block_hash,
+                                   "hash_list": main_chain_hash_list
+                                   }
+                             )
     result = response.json()
     print(result)
     if result["status"] == False:
@@ -186,6 +191,6 @@ def get_missing_block(block_hash:str, sender_node_id:str):
         return False
     else:
         return True
-    #gửi lại block thiếu + branch main hiện tại.
-    #nhận lại: liên tục cho vào block mới.
-    #nếu response: missing share branch: break, return: block chain không thể đồng bộ.
+    # gửi lại block thiếu + branch main hiện tại.
+    # nhận lại: liên tục cho vào block mới.
+    # nếu response: missing share branch: break, return: block chain không thể đồng bộ.
