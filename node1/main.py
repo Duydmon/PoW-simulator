@@ -7,8 +7,7 @@ import requests
 import time
 import network
 from config import IP_ADDRESS, PORT, NODE_ID, URL, NODE_LIST
-
-
+import miner
 # -------------------
 # Flask Server Thread
 # -------------------
@@ -85,6 +84,10 @@ def menu():
             network.announce()
 
         elif choice == "0":
+            if miner.mining:
+                mining = False
+                print("Stopping miner")
+                time.sleep(0.5)
             break
 
 
@@ -94,7 +97,8 @@ def menu():
 if __name__ == "__main__":
     # chạy flask ở thread riêng
     flask_thread = threading.Thread(
-        target=run_server
+        target=run_server,
+        daemon=True
     )
     flask_thread.start()
     time.sleep(1)
@@ -102,3 +106,4 @@ if __name__ == "__main__":
     network.announce()
     print(NODE_LIST)
     menu()
+    print("Goodbye")
