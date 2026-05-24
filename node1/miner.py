@@ -2,12 +2,10 @@ import hashlib
 import json
 from typing import Any
 
-import requests
-
 import database
 import time
 from config import NODE_ID, DIFFICULTY, NODE_LIST, IP_ADDRESS
-from node1 import network
+import network
 
 mining = False
 
@@ -39,6 +37,7 @@ def mine():
     if not data or not message_hash:
         print("No more data in mempool")
         mining = False
+        return
     timestamp = time.time()
     while mining:
         previous_block_data = database.get_active_tip_block_data()  # block_hash, height, chain_work

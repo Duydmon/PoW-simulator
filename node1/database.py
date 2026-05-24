@@ -7,13 +7,13 @@ from config import BLOCK_COUNT, BLOCK_LIMIT
 
 # khi đưa data vào, sẽ ký số và
 
-def add_data_mempool(data, node_id, timestamp):
+def add_data_mempool(data, node_id, timestamp,in_chain_status = 0 ):
     data_to_hash = {
         "data": data,
         "node_id": node_id,
         "timestamp": timestamp
     }
-    hased_data = hashlib.sha256(json.dumps(data_to_hash, sort_keys=True).encode()).hexdigest()
+    hashed_data = hashlib.sha256(json.dumps(data_to_hash, sort_keys=True).encode()).hexdigest()
     conn = sqlite3.connect('./db/blockchain.db')
     cursor = conn.cursor()
     cursor.execute("""
@@ -24,11 +24,11 @@ def add_data_mempool(data, node_id, timestamp):
                                        in_chain)
                    VALUES (?, ?, ?, ?, ?)
                    """, (
-                       hased_data,
+                       hashed_data,
                        timestamp,
                        data,
                        node_id,
-                       0
+                       in_chain_status
                    ))
     conn.commit()
     conn.close()
@@ -166,14 +166,14 @@ def check_data_if_in_db(data, node_id, timestamp):
         "node_id": node_id,
         "timestamp": timestamp
     }
-    hased_data = hashlib.sha256(json.dumps(data_to_hash, sort_keys=True).encode()).hexdigest()
+    hashed_data = hashlib.sha256(json.dumps(data_to_hash, sort_keys=True).encode()).hexdigest()
     conn = sqlite3.connect('./db/blockchain.db')
     cursor = conn.cursor()
     cursor.execute("""
                    SELECT COUNT(*)
                    FROM mempool
                    WHERE hash = ?
-                   """, (hased_data,))
+                   """, (hashed_data,))
     count = cursor.fetchone()[0]
     conn.close()
     return count > 0

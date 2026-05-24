@@ -7,7 +7,7 @@ import threading
 import miner
 import database
 from config import NODE_ID, PORT, NODE_LIST
-from node1 import network
+import network
 
 app = Flask(__name__)
 
@@ -23,7 +23,16 @@ def home():
 
 @app.route("/start")
 def start_mining():
-    if not miner.mining:
+    if miner.mining:
+        return jsonify({
+            "message": "Already mining"
+        })
+    else:
+        data, hash = miner.prepare_data_to_hash()
+        if not data or not hash:
+            return jsonify({
+                "message": "No data in mempool"
+            })
         miner.mining = True
         thread = threading.Thread(
             target=miner.mine
@@ -32,10 +41,6 @@ def start_mining():
         return jsonify({
             "message": "Mining started"
         })
-    return jsonify({
-        "message": "Already mining"
-    })
-
 
 @app.route("/newest_block")
 def newest_block():
@@ -89,7 +94,7 @@ def receive_node_id():
 def get_mined_block():
     body = request.get_json()
     validate_result = network.validate_block(body["block_data"], body["hashed_block"], body["sender_node_id"])
-    if validate_result == False:
+    if not validate_result:
         return jsonify({
             "message": "Block not added to database"
         })
@@ -101,6 +106,16 @@ def get_mined_block():
     block_data_list = json.loads(body['block_data']['data'])
     for data in block_data_list:
         message_hash_list.append(data['hash'])
+        mempool_data = data['data']
+        mempool_node_id = data['node_id']
+        mempool_time = data['time']
+        in_mempool_status = database.check_data_if_in_db(mempool_data, mempool_node_id, mempool_time)
+        if in_mempool_status:
+            continue
+        database.add_data_mempool(mempool_data, mempool_node_id, mempool_time, 1)
+        # [{"data": "test data to check if data is already in block chain",
+        #   "hash": "ded2a058db2166ef66b877131cea0f24b75b0210bb1a4b7f43e12cbea32d6de1",
+        #   "node_id": "54dfa451cf9896851bdf9b37061062b5297b8fb83a061c46e5054d8118667daa", "time": 1779005802.562042}]
     database.mark_data_in_chain(message_hash_list)
     database.add_new_block(body["block_data"], body["hashed_block"], is_main_chain)
     return jsonify({

@@ -110,14 +110,14 @@ def validate_block(block_data_json: dict, block_hash: str, sender_node_id: str):
     if block_data_json["chain_work"] - block_data_json["difficulty"] != previous_block_data[7]:
         print("Block difficulty mismatch")
         return False
-    if not validaate_data_in_block(block_data_json["data"]):
+    if not validate_data_in_block(block_data_json["data"]):
         print("Data mismatch")
         return False
     print("Block validated")
     return True
 
 
-def validaate_data_in_block(data_in_block_str: str):
+def validate_data_in_block(data_in_block_str: str):
     data_list = json.loads(data_in_block_str)
     for data in data_list:
         data_to_hash = {
