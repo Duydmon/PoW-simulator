@@ -73,6 +73,8 @@ def menu():
 
         elif choice == "4":
             print(NODE_LIST)
+            connectec_node = network.check_connection()
+            print(connectec_node)
 
         elif choice == "5":
             response = requests.get(
