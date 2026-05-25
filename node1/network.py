@@ -191,6 +191,21 @@ def get_missing_block(block_hash: str, sender_node_id: str):
         return False
     else:
         return True
-    # gửi lại block thiếu + branch main hiện tại.
-    # nhận lại: liên tục cho vào block mới.
-    # nếu response: missing share branch: break, return: block chain không thể đồng bộ.
+#gửi yêu cầu đến với từng node cùng với chain của nó.
+def syncronize_database():
+    response = {
+        "message": "No port connected"
+    }
+    node_port_list = check_connection()
+    hash_list = database.get_chain_from_tip(database.get_active_tip_block_data()["block_hash"])
+    for port in node_port_list:
+        response = requests.post(
+            f"http://{IP_ADDRESS}:{port}/get_missing_branch",
+            json={
+                "receiver_node_id": NODE_ID,
+                "block_hash": "get_all",
+                "hash_list": hash_list
+            }
+        )
+        database.reorg()
+    print(response.json())

@@ -29,6 +29,7 @@ def menu():
         print("4. Print Node List")
         print("5. Check newest block")
         print("6. re-Announce")
+        print("7. Syncronize blockchain")
         print("0. Exit")
 
         choice = input("Select: ")
@@ -84,6 +85,9 @@ def menu():
 
         elif choice == "6":
             network.announce()
+
+        elif choice == "7":
+            network.syncronize_database()
 
         elif choice == "0":
             if miner.mining:

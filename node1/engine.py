@@ -142,6 +142,8 @@ def get_missing_branch():
     receiver_node_id = body['receiver_node_id']
     requested_block_hash = body['block_hash']
     chain_hash_list = body['hash_list']
+    if requested_block_hash == "get_all":
+        requested_block_hash = database.get_active_tip_block_data()["block_hash"]
     requested_chain_hash_list = database.get_chain_from_tip(requested_block_hash)
     share_root = database.get_latest_shared_root(chain_hash_list, requested_chain_hash_list)
     if not share_root:
