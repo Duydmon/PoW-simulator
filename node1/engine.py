@@ -175,3 +175,36 @@ def get_missing_branch():
     # tìm share root #nếu không tìm được thì break và trả lại lỗi.
     # liên tục lặp qua chuôi để lấy dữ liệu và gọi thêm vào.
     # return
+
+@app.route('/syncronize_mempool', methods=["POST"])
+def syncronize_mempool():
+    body = request.get_json()
+    mempool_hash_list = body['mempool_hash']
+    data_to_send_list = database.get_data_not_in_hash_list(mempool_hash_list)
+    if not data_to_send_list:
+        return jsonify({
+            "message": "Mempool already synced"
+        })
+    requested_node_port = NODE_LIST[body['request_node_id']]["port"]
+    response = requests.post(
+        f'http://127.0.0.1:{requested_node_port}/add_mempool_list',
+        json = {
+            'data_to_send_list': data_to_send_list,
+            'sender_node_id': NODE_ID
+        }
+    )
+    print(response.json())
+    return jsonify({
+        "message": f"Synchronized mempool with {NODE_ID}"
+    })
+
+@app.route('/add_mempool_list', methods=["POST"])
+def add_mempool_list():
+    body = request.get_json()
+    data_to_add_list = body['data_to_send_list']
+    sender_node_id = body['sender_node_id']
+    database.add_mempool_list_to_db(data_to_add_list)
+    print(f"data received from {sender_node_id}")
+    return jsonify({
+        "message": "Data list added to mempool"
+    })

@@ -209,3 +209,22 @@ def syncronize_database():
         )
         database.reorg()
     print(response.json())
+
+def syncronize_mempool():
+    node_port_list = check_connection()
+    response = {
+        "message": "No port connected"
+    }
+    for port in node_port_list:
+        data_hash_list = database.get_all_hash_in_mempool()
+        response = requests.post(
+            f"http://{IP_ADDRESS}:{port}/syncronize_mempool",
+            json={
+                "request_node_id": NODE_ID,
+                "mempool_hash": data_hash_list
+            }
+        )
+    print(response.json())
+    # post: gửi danh sách tất cả hash trong ữ liệu.
+    # B: lấy tất cả dữ liệu không ở trong danh sách
+    # B: gửi lại sử dụng add to mempool

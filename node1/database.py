@@ -357,3 +357,49 @@ def get_data_in_block_by_hash(block_hash_list: list) -> list:
     rows_list = [row[0] for row in rows]
     conn.close()
     return rows_list
+
+def get_all_hash_in_mempool()-> list:
+    conn = sqlite3.connect('./db/blockchain.db')
+    cursor = conn.cursor()
+    cursor.execute(f"""
+                   SELECT hash 
+                   FROM mempool
+                   ORDER BY id
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    return [row[0] for row in rows]
+
+def get_data_not_in_hash_list(hash_list: list) -> list:
+    conn = sqlite3.connect('./db/blockchain.db')
+    cursor = conn.cursor()
+    # nếu list rỗng -> lấy toàn bộ
+    if not hash_list:
+        cursor.execute("""
+            SELECT hash, time, node_id, data, in_chain
+            FROM mempool
+            ORDER BY id
+        """)
+    else:
+        placeholders = ",".join(["?"] * len(hash_list))
+        query = f"""
+            SELECT hash, time, node_id, data, in_chain
+            FROM mempool
+            WHERE hash NOT IN ({placeholders})
+            ORDER BY id
+        """
+        cursor.execute(query, hash_list)
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+def add_mempool_list_to_db(mempool_list: list):
+    conn = sqlite3.connect('./db/blockchain.db')
+    cursor = conn.cursor()
+    cursor.executemany("""
+                       INSERT OR IGNORE  INTO mempool
+                       (hash, time, node_id, data, in_chain)
+                       VALUES (?, ?, ?, ?, ?)
+                       """, mempool_list)
+    conn.commit()
+    conn.close()
