@@ -2,7 +2,7 @@
 import hashlib
 import json
 import sqlite3
-from config import BLOCK_COUNT, BLOCK_LIMIT
+from config import BLOCK_COUNT, BLOCK_LIMIT, DATA_IN_BLOCK_LIMIT
 
 
 # khi đưa data vào, sẽ ký số và
@@ -41,7 +41,8 @@ def get_data_from_mempool() -> list:
     cursor.execute("""
                    SELECT hash, time, data, node_id, id
                    FROM mempool
-                   WHERE in_chain = 0 LIMIT 5""")
+                   WHERE in_chain = 0 LIMIT ?""",
+                   (DATA_IN_BLOCK_LIMIT,))
     row = cursor.fetchall()
     conn.close()
     return row
