@@ -17,10 +17,9 @@ cursor = conn.cursor()
 # -------------------
 
 cursor.execute("""
-
 CREATE TABLE mempool(
-    id INTEGER AUTOINCREMENT,
-    hash TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    hash TEXT UNIQUE NOT NULL,
     time INTEGER NOT NULL,
     node_id TEXT NOT NULL,
     data TEXT,

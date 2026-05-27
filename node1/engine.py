@@ -102,6 +102,7 @@ def get_mined_block():
     is_main_chain = 0
     if tip_block_data["block_hash"] == body["block_data"]["previous_hash"]:
         is_main_chain = 1
+    database.add_new_block(body["block_data"], body["hashed_block"], is_main_chain)
     message_hash_list = []
     block_data_list = json.loads(body['block_data']['data'])
     for data in block_data_list:
@@ -109,15 +110,19 @@ def get_mined_block():
         mempool_data = data['data']
         mempool_node_id = data['node_id']
         mempool_time = data['time']
-        in_mempool_status = database.check_data_if_in_db(mempool_data, mempool_node_id, mempool_time)
-        if in_mempool_status:
-            continue
-        database.add_data_mempool(mempool_data, mempool_node_id, mempool_time, 1)
+        # in_mempool_status = database.check_data_if_in_db(mempool_data, mempool_node_id, mempool_time)
+        # if in_mempool_status:
+        #     continue
+        database.add_data_mempool(mempool_data, mempool_node_id, mempool_time, is_main_chain)
         # [{"data": "test data to check if data is already in block chain",
         #   "hash": "ded2a058db2166ef66b877131cea0f24b75b0210bb1a4b7f43e12cbea32d6de1",
         #   "node_id": "54dfa451cf9896851bdf9b37061062b5297b8fb83a061c46e5054d8118667daa", "time": 1779005802.562042}]
-    database.mark_data_in_chain(message_hash_list)
-    database.add_new_block(body["block_data"], body["hashed_block"], is_main_chain)
+
+    if is_main_chain:
+        database.mark_data_in_chain(message_hash_list, 1)
+    else:
+        database.mark_side_chain_data(message_hash_list)
+    # database.mark_data_in_chain(message_hash_list,is_main_chain)
     return jsonify({
         "message": f"Block sent to {PORT}"
     })

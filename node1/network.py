@@ -191,7 +191,7 @@ def get_missing_block(block_hash: str, sender_node_id: str):
         return False
     else:
         return True
-#gửi yêu cầu đến với từng node cùng với chain của nó.
+
 def syncronize_database():
     response = {
         "message": "No port connected"

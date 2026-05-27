@@ -31,9 +31,11 @@ def add_data_mempool(data, node_id, timestamp,in_chain_status = 0 ):
                        in_chain_status
                    ))
     conn.commit()
+    if cursor.rowcount:
+        print("Data added to mempool!")
+    else:
+        print("Data already exists, ignored")
     conn.close()
-    print("Data added to mempool!")
-
 
 def get_data_from_mempool() -> list:
     conn = sqlite3.connect('./db/blockchain.db')
@@ -401,5 +403,22 @@ def add_mempool_list_to_db(mempool_list: list):
                        (hash, time, node_id, data, in_chain)
                        VALUES (?, ?, ?, ?, ?)
                        """, mempool_list)
+    conn.commit()
+    conn.close()
+
+
+def mark_side_chain_data(message_hash_list:list):
+    conn = sqlite3.connect('./db/blockchain.db')
+    cursor = conn.cursor()
+
+    placeholders = ",".join(["?"] * len(message_hash_list))
+
+    cursor.execute(f"""
+        UPDATE mempool
+        SET in_chain = 0
+        WHERE hash IN ({placeholders})
+        AND in_chain != 1
+    """, message_hash_list)
+
     conn.commit()
     conn.close()
