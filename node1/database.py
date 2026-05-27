@@ -22,7 +22,7 @@ def add_data_mempool(data, node_id, timestamp,in_chain_status = 0 ):
                                        data,
                                        node_id,
                                        in_chain)
-                   VALUES (?, ?, ?, ?, ?)
+                   VALUES (?, ?, ?, ?, ?) ON CONFLICT(hash) DO NOTHING
                    """, (
                        hashed_data,
                        timestamp,
