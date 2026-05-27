@@ -64,7 +64,9 @@ def mine():
                 found = True
                 break
             nonce += 1
-            if nonce % 100 == 0:
+            if nonce % 1000 == 0:
+                if nonce % 100000 == 0:
+                    timestamp = time.time()
                 new_tip_block_data = database.get_active_tip_block_data()
                 if new_tip_block_data["block_hash"] != tip_block_hash:
                     print("New tip detected, restart mining")
