@@ -1,0 +1,56 @@
+Running the Blockchain Network with Docker
+1. Configure Nodes
+
+Edit the node parameters in docker-compose.yml before starting the network.
+
+2. Build and Start the Network
+
+Run the following command:
+
+docker-compose up --build -d
+
+This will build the images and start all nodes in the background.
+
+3. Attach to a Node
+
+To interact with a node terminal, use:
+
+docker attach node*
+
+Example:
+
+docker attach node1
+
+Replace node1 with the target node name if needed.
+
+4. Stop a Node
+
+To simulate an offline node, stop it with:
+
+docker stop node*
+
+Example:
+
+docker stop node2
+
+To start an offline node, use
+
+docker start node2
+docker attach node2
+
+5. Default Behavior
+
+By default, all nodes defined in docker-compose.yml will start automatically and remain online.
+
+6. Database Location
+
+Each node stores its blockchain database in:
+
+./data/node*/blockchain.db
+
+Example:
+
+./data/node1/blockchain.db
+7. First-Time Initialization
+
+When starting a node for the first time, select option 100 to initialize the blockchain database.

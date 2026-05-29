@@ -1,0 +1,58 @@
+services:
+  node1:
+    build: .
+    container_name: node1
+    hostname: node1
+    stdin_open: true
+    tty: true
+    environment:
+      - IP_ADDRESS=node1
+      - PORT=5000
+      - DIFFICULTY=5
+      - PEER_HOSTS=node2:5001,node3:5002
+    ports:
+      - "5000:5000"
+    networks:
+      - blockchain_net
+    volumes:
+      - ./data/node1:/app/db
+
+  node2:
+    build: .
+    container_name: node2
+    hostname: node2
+    stdin_open: true
+    tty: true
+    environment:
+      - IP_ADDRESS=node2
+      - PORT=5001
+      - DIFFICULTY=5
+      - PEER_HOSTS=node1:5000,node3:5002
+    ports:
+      - "5001:5001"
+    networks:
+      - blockchain_net
+    volumes:
+      - ./data/node2:/app/db
+
+  node3:
+    build: .
+    container_name: node3
+    hostname: node3
+    stdin_open: true
+    tty: true
+    environment:
+      - IP_ADDRESS=node3
+      - PORT=5002
+      - DIFFICULTY=5
+      - PEER_HOSTS=node1:5000,node2:5001
+    ports:
+      - "5002:5002"
+    networks:
+      - blockchain_net
+    volumes:
+      - ./data/node3:/app/db
+
+networks:
+  blockchain_net:
+    driver: bridge
